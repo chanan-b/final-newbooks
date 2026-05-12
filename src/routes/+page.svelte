@@ -7,6 +7,14 @@ let { data } = $props();
 
 // Wrap the array in $state so the totals below can react to it.
 let transactions = $state(data.transactions);
+
+let currentFilter = $state('All'); // Options: 'All', 'Revenue', 'Expense'
+
+let filteredTransactions = $derived(
+  currentFilter === 'All' 
+    ? transactions 
+    : transactions.filter(t => classify(t) === currentFilter)
+);
   // Add this INSIDE the <script> block, below the transactions array.
 function classify(t) {
   if (t.credit === 'Revenue') {
@@ -126,7 +134,16 @@ let netIncome = $derived(totalRevenue - totalExpenses);
   <!-- TRANSACTIONS LIST -->
   <section class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
     <h2 class="text-xl font-bold text-slate-800 mb-4">Recent Transactions</h2>
-
+<div class="flex gap-2 mb-4">
+  {#each ['All', 'Revenue', 'Expense'] as filter}
+    <button 
+      onclick={() => currentFilter = filter}
+      class="px-3 py-1 rounded text-sm font-medium border transition-colors 
+      {currentFilter === filter ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}">
+      {filter}
+    </button>
+  {/each}
+</div>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
@@ -140,7 +157,7 @@ let netIncome = $derived(totalRevenue - totalExpenses);
           </tr>
         </thead>
         <tbody>
-  {#each transactions as t (t.id)}
+  {#each filteredTransactions as t (t.id)}
     <tr class="border-t border-slate-200 hover:bg-slate-50">
       <td class="px-3 py-2">{t.date}</td>
       <td class="px-3 py-2">{t.description}</td>
